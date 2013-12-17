@@ -1,0 +1,7 @@
+name = Loyalist Record Insertion
+project = loyalistinsert
+description = Inserts finding aids programmatically into nodes
+package = Loyalist
+version = 7.x-1.01
+core = 7.x
+project status url = http://systems.lib.unb.ca/updates

@@ -1,0 +1,55 @@
+<?php
+
+function loyalist_insert_node_view($node, $view_mode, $langcode) {
+    //dsm($node);
+}
+
+function _attach_files_loyalist(){
+    // For Node type record
+    $type = "loyalist_record"; 
+    // Load nodes
+    $loyalistnodes = node_load_multiple(array(), array('type' => $type)); 
+    
+    foreach($loyalistnodes as $individualloyalistnode){
+            // Does the Node have an accompanying record
+            if(isset($individualloyalistnode->field_accompanying_record['und'][0]['value']))
+            {
+               // Get the accompanying record value
+               $finding_aid_acc =  $individualloyalistnode->field_accompanying_record['und'][0]['value'];
+               // Local Finding Aids path
+               $localfindaidsfolder = "/home/vagrant/finding_aids";
+               $scanlocalfolder = scandir($localfindaidsfolder);
+               foreach ($scanlocalfolder as $filename)
+               {
+                   if($filename == $finding_aid_acc.".pdf" || $filename == $finding_aid_acc.".txt" || $filename == $finding_aid_acc.".html")
+                   {
+                       // Basename
+                       $fn = basename($filename);
+                       $file_drupal_path = "/vagrant/public/drupal.vbox.local/www/sites/default/files/finding_aids_docs/".$fn;
+                       // Copy local folder files to Drupal
+                       $cp = copy($localfindaidsfolder.'/'.$filename,$file_drupal_path);
+                       // While at copying build a file object for each of those imports
+                       if($cp) {
+                        // File Object Properties
+                        $findingaidfile = new stdClass();
+                        $findingaidfile->filename  = basename($file_drupal_path);
+                        $findingaidfile->filepath  = $_SERVER['DOCUMENT_ROOT'].'/sites/default/files/finding_aids_docs/'.$fn;
+                        $findingaidfile->uri       = 'public://finding_aids_docs/'.$findingaidfile->filename;
+                        $findingaidfile->filemime  = mime_content_type($file_drupal_path);
+                        $findingaidfile->filesize  = filesize($file_drupal_path);
+                        $findingaidfile->uid       = 1;
+                        $findingaidfile->timestamp = time();
+                        $findingaidfile->status = FILE_STATUS_PERMANENT;
+                        $findingaidfile->display = 1;
+                        // Add file object to Drupal Schema
+                        drupal_write_record('file_managed', $findingaidfile);
+                        }
+                    }
+                }
+                // Add File object to node field
+                $individualloyalistnode->field_finding_aid_record['und'][0] = (array)$findingaidfile;
+                // Save the node
+                node_save($individualloyalistnode);
+            }
+       }
+}
