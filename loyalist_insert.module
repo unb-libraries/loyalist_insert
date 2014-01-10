@@ -1,15 +1,24 @@
 <?php
-
 function loyalist_insert_node_view($node, $view_mode, $langcode) {
-    //dsm($node);
+    $search_url = $_SERVER['HTTP_REFERER'];
+    $parse_url = parse_url($search_url);    
+    // Extract term from the URL
+    $extractsearchTerm = substr($parse_url['query'], strpos($parse_url['query'], "=") + 1);
+    // Search Replace searched term in fields
+    // Contents
+    $node->field_contents['und'][0]['value'] = str_ireplace($extractsearchTerm,'<span style="color:red;">'.$extractsearchTerm.'</span>',$node->field_contents['und'][0]['value']); 
+    // Finding Aids
+    $node->field_finding_aids['und'][0]['value'] = str_ireplace($extractsearchTerm,'<span style="color:red;">'.$extractsearchTerm.'</span>',$node->field_finding_aids['und'][0]['value']);
+    // Background Info
+    $node->field_background_information['und'][0]['value'] = str_ireplace($extractsearchTerm,'<span style="color:red;">'.$extractsearchTerm.'</span>',$node->field_background_information['und'][0]['value']);
+    // Notes
+    $node->field_notes['und'][0]['value'] = str_ireplace($extractsearchTerm,'<span style="color:red;">'.$extractsearchTerm.'</span>',$node->field_notes['und'][0]['value']);
 }
-
 function _attach_files_loyalist(){
     // For Node type record
     $type = "loyalist_record"; 
     // Load nodes
     $loyalistnodes = node_load_multiple(array(), array('type' => $type)); 
-    
     foreach($loyalistnodes as $individualloyalistnode){
             // Does the Node have an accompanying record
             if(isset($individualloyalistnode->field_accompanying_record['und'][0]['value']))
